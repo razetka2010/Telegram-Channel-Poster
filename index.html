@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отправка в Telegram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .header {
+            background: #f8f8f8;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .file-input {
+            margin: 10px 0;
+        }
+
+        .file-input input {
+            margin-top: 5px;
+        }
+
+        .preview {
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border: 1px solid #ddd;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Отправка в Telegram-канал</h1>
+        <p>t.me/razetkaartem</p>
+    </div>
+
+    <div class="content">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('text')">Текст</button>
+            <button class="tab" onclick="switchTab('photo')">Фото</button>
+        </div>
+
+        <!-- Вкладка текста -->
+        <div id="text-tab" class="tab-content active">
+            <div class="form-group">
+                <label>Сообщение:</label>
+                <textarea id="message" placeholder="Введите сообщение..."></textarea>
+            </div>
+            <button class="btn" onclick="sendMessage()" id="sendTextBtn">Отправить сообщение</button>
+            <div class="hint">Ctrl + Enter для отправки</div>
+        </div>
+
+        <!-- Вкладка фото -->
+        <div id="photo-tab" class="tab-content">
+            <div class="form-group">
+                <label>Подпись к фото (необязательно):</label>
+                <textarea id="photoMessage" placeholder="Описание фото..."></textarea>
+            </div>
+
+            <div class="file-input">
+                <label>Выберите фото:</label>
+                <input type="file" id="photo" accept="image/*">
+            </div>
+
+            <div class="preview" id="photoPreview"></div>
+
+            <button class="btn" onclick="sendPhoto()" id="sendPhotoBtn">Отправить фото</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+</div>
+
+<script>
+    let currentTab = 'text';
+
+    function switchTab(tabName) {
+        // Скрываем все вкладки
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Показываем выбранную вкладку
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+        currentTab = tabName;
+
+        // Настройка превью для фото
+        if (tabName === 'photo') {
+            document.getElementById('photo').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById('photoPreview');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = '';
+                }
+            });
+        }
+    }
+
+    // Функция отправки текста
+    async function sendMessage() {
+        const message = document.getElementById('message').value.trim();
+        const resultDiv = document.getElementById('result');
+        const sendBtn = document.getElementById('sendTextBtn');
+
+        if (!message) {
+            showResult('Пожалуйста, введите сообщение', 'error');
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Отправка...';
+
+        try {
+            const response = await fetch('telegram_sender.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'text',
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showResult('Сообщение отправлено в канал', 'success');
+                document.getElementById('message').value = '';
+            } else {
+                showResult('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+            }
+        } catch (error) {
+            showResult('Ошибка сети: ' + error.message, 'error');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Отправить сообщение';
+        }
+    }
+
+    // Функция отправки фото
+    async function sendPhoto() {
+        const message = document.getElementById('photoMessage').value.trim();
+        const photoInput = document.getElementById('photo');
+        const resultDiv = document.getElementById('result');
+        const sendBtn = document.getElementById('sendPhotoBtn');
+
+        if (!photoInput.files[0]) {
+            showResult('Пожалуйста, выберите фото', 'error');
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Отправка...';
+
+        try {
+            const formData = new FormData();
+            formData.append('type', 'photo');
+            formData.append('message', message);
+            formData.append('photo', photoInput.files[0]);
+
+            const response = await fetch('telegram_sender.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showResult('Фото отправлено в канал', 'success');
+                document.getElementById('photoMessage').value = '';
+                document.getElementById('photo').value = '';
+                document.getElementById('photoPreview').innerHTML = '';
+            } else {
+                showResult('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+            }
+        } catch (error) {
+            showResult('Ошибка сети: ' + error.message, 'error');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Отправить фото';
+        }
+    }
+
+    function showResult(text, type) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `<div class="result ${type}">${text}</div>`;
+
+        setTimeout(() => {
+            resultDiv.innerHTML = '';
+        }, 5000);
+    }
+
+    // Отправка текста по Ctrl+Enter
+    document.getElementById('message').addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+        // Настройка превью для фото при загрузке страницы
+        document.getElementById('photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('photoPreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+    });
+</script>
+</body>
+</html>
