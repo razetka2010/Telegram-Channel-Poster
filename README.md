@@ -29,5 +29,6 @@ telegram-poster/
 1. Откройте файл `telegram_sender.php`
 2. Найдите и замените следующие строки:
 
+```php
 $botToken = 'YOUR_BOT_TOKEN_HERE'; // Замените на ваш токен
 $channel = '@razetkaartem'; // Замените на username вашего канала
