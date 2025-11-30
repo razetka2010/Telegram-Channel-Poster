@@ -5,6 +5,7 @@
 ## 📁 Структура файлов
 telegram-poster/
 │
+
 ├── index.html # Главная страница с веб-интерфейсом
 ├── telegram_sender.php # PHP скрипт для отправки сообщений в Telegram
 └── README.md # Документация (этот файл)
