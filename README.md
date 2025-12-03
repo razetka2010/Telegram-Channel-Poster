@@ -38,4 +38,4 @@
 
 ```php
 $botToken = 'YOUR_BOT_TOKEN_HERE'; // Замените на ваш токен
-$channel = '@razetkaartem'; // Замените на username вашего канала
+$channel = '@username'; // Замените на username вашего канала
