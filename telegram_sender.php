@@ -27,8 +27,8 @@ if ($isJson) {
 }
 
 // Данные бота и канала
-$botToken = ''; // ⚠️ ЗАМЕНИТЕ на реальный токен!
-$channel = '';
+$botToken = 'YOUR_BOT_TOKEN_HERE'; // Замените на ваш токен
+$channel = '@username'; // Замените на username вашего канала
 
 try {
     if ($type === 'photo' && $photo && $photo['error'] === UPLOAD_ERR_OK) {
@@ -116,3 +116,4 @@ function sendPhoto($botToken, $channel, $photo, $caption = '') {
 }
 
 ?>
+
