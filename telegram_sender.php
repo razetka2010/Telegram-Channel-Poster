@@ -27,8 +27,8 @@ if ($isJson) {
 }
 
 // Данные бота и канала
-$botToken = '8574660284:AAELLf0OP_KUPJ9qjGJBq0ggFvgo-c4DEec'; // ⚠️ ЗАМЕНИТЕ на реальный токен!
-$channel = '@POGklounPOG';
+$botToken = ''; // ⚠️ ЗАМЕНИТЕ на реальный токен!
+$channel = '';
 
 try {
     if ($type === 'photo' && $photo && $photo['error'] === UPLOAD_ERR_OK) {
@@ -114,4 +114,5 @@ function sendPhoto($botToken, $channel, $photo, $caption = '') {
         throw new Exception($errorMessage);
     }
 }
+
 ?>
